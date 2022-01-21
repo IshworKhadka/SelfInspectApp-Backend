@@ -9,6 +9,8 @@
     <Compile Remove="Migrations\20220102170050_CreateSelfInspectDB.Designer.cs" />
     <Compile Remove="Migrations\20220102181157_CreateSelfInspectDB.cs" />
     <Compile Remove="Migrations\20220102181157_CreateSelfInspectDB.Designer.cs" />
+    <Compile Remove="Migrations\20220113144410_SIAmigration.cs" />
+    <Compile Remove="Migrations\20220113144410_SIAmigration.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

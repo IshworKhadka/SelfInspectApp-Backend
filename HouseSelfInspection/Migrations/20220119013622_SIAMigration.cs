@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace HouseSelfInspection.Migrations
 {
-    public partial class SIAmigration : Migration
+    public partial class SIAMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -29,10 +29,10 @@ namespace HouseSelfInspection.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Inspections",
+                name: "InspectionSchedules",
                 columns: table => new
                 {
-                    InspectionId = table.Column<int>(nullable: false)
+                    InspectionScheduleId = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     HouseId = table.Column<int>(nullable: false),
                     TenantId = table.Column<int>(nullable: false),
@@ -41,7 +41,7 @@ namespace HouseSelfInspection.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Inspections", x => x.InspectionId);
+                    table.PrimaryKey("PK_InspectionSchedules", x => x.InspectionScheduleId);
                 });
 
             migrationBuilder.CreateTable(
@@ -94,7 +94,7 @@ namespace HouseSelfInspection.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Inspections");
+                name: "InspectionSchedules");
 
             migrationBuilder.DropTable(
                 name: "Login");

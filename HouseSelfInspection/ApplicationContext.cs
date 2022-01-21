@@ -18,7 +18,7 @@ namespace HouseSelfInspection
         public DbSet<TenantModel> Tenants { get; set; }
         public DbSet<LoginModel> Login { get; set; }
 
-        public DbSet<InspectionScheduleModel> Inspections { get; set; }
+        public DbSet<InspectionScheduleModel> InspectionSchedules { get; set; }
 
     }
 }

@@ -74,7 +74,7 @@ namespace HouseSelfInspection.Migrations
 
                     b.HasKey("InspectionScheduleId");
 
-                    b.ToTable("Inspections");
+                    b.ToTable("InspectionSchedules");
                 });
 
             modelBuilder.Entity("HouseSelfInspection.Models.LoginModel", b =>

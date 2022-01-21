@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HouseSelfInspection.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20220113144410_SIAmigration")]
-    partial class SIAmigration
+    [Migration("20220119013622_SIAMigration")]
+    partial class SIAMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -76,7 +76,7 @@ namespace HouseSelfInspection.Migrations
 
                     b.HasKey("InspectionScheduleId");
 
-                    b.ToTable("Inspections");
+                    b.ToTable("InspectionSchedules");
                 });
 
             modelBuilder.Entity("HouseSelfInspection.Models.LoginModel", b =>

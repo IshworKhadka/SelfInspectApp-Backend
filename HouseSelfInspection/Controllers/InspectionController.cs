@@ -32,7 +32,7 @@ namespace HouseSelfInspection.Controllers
         {
             try
             {
-                return context.Inspections;
+                return context.InspectionSchedules;
 
             }
             catch (Exception ex)
@@ -47,7 +47,7 @@ namespace HouseSelfInspection.Controllers
         {
             try
             {
-                context.Inspections.Add(model);
+                context.InspectionSchedules.Add(model);
                 await context.SaveChangesAsync();
                 return Ok(model);
 
@@ -90,7 +90,7 @@ namespace HouseSelfInspection.Controllers
         {
             try
             {
-                context.Inspections.Remove(context.Inspections.Find(id));
+                context.InspectionSchedules.Remove(context.InspectionSchedules.Find(id));
                 await context.SaveChangesAsync();
                 return Ok();
 
