@@ -117,7 +117,7 @@ namespace HouseSelfInspection.Controllers
             try
             {
                 var files = Request.Form.Files;
-                var folderName = Path.Combine("Resources", "Images");
+                var folderName = Path.Combine("App_Data", "Images");
                 var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
 
                 if (files.Any(f => f.Length == 0))

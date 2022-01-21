@@ -44,9 +44,9 @@ namespace HouseSelfInspection
             }));
 
             //services.AddDbContext<ApplicationContext>(options => options.UseInMemoryDatabase("house"));
-            //services.AddDbContext<UserDbContext>(options => options.UseInMemoryDatabase("user"));
+            services.AddDbContext<UserDbContext>(options => options.UseInMemoryDatabase("user"));
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
-            services.AddDbContext<UserDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
+            //services.AddDbContext<UserDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
             
 
             services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<UserDbContext>();
@@ -121,8 +121,8 @@ namespace HouseSelfInspection
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Resources")),
-                RequestPath = new PathString("/Resources")
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"App_Data")),
+                RequestPath = new PathString("/App_Data")
             });
 
         }
