@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HouseSelfInspection.Models
+namespace HouseSelfInspection.Models.Static_Models
 {
     public class RoleModel
     {

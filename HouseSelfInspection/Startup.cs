@@ -44,24 +44,24 @@ namespace HouseSelfInspection
             }));
 
             //services.AddDbContext<ApplicationContext>(options => options.UseInMemoryDatabase("house"));
-            services.AddDbContext<UserDbContext>(options => options.UseInMemoryDatabase("user"));
+            //services.AddDbContext<UserDbContext>(options => options.UseInMemoryDatabase("user"));
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
             //services.AddDbContext<UserDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
             
 
-            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<UserDbContext>();
+            //services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<UserDbContext>();
 
             //services.AddDefaultIdentity<ApplicationUser>()
             //    .AddEntityFrameworkStores<ApplicationContext>();
 
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequiredLength = 4;
-            });
+            //services.Configure<IdentityOptions>(options =>
+            //{
+            //    options.Password.RequireDigit = false;
+            //    options.Password.RequireNonAlphanumeric = false;
+            //    options.Password.RequireLowercase = false;
+            //    options.Password.RequireUppercase = false;
+            //    options.Password.RequiredLength = 4;
+            //});
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 

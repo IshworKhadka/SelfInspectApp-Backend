@@ -19,6 +19,46 @@ namespace HouseSelfInspection.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("HouseSelfInspection.Models.ActivityModel", b =>
+                {
+                    b.Property<int>("ActivityId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ActivityAudienceUser");
+
+                    b.Property<DateTime>("ActivityDate");
+
+                    b.Property<string>("ActivityDescription");
+
+                    b.Property<string>("ActivityTitle");
+
+                    b.Property<int>("ActivityUser");
+
+                    b.HasKey("ActivityId");
+
+                    b.ToTable("Activities");
+                });
+
+            modelBuilder.Entity("HouseSelfInspection.Models.CommentModel", b =>
+                {
+                    b.Property<int>("CommentID")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ActivityId");
+
+                    b.Property<DateTime>("CommentDateTime");
+
+                    b.Property<string>("CommentDesciption");
+
+                    b.Property<int>("CommentUserId");
+
+                    b.HasKey("CommentID");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("HouseSelfInspection.Models.HouseModel", b =>
                 {
                     b.Property<int>("HouseId")
@@ -58,6 +98,27 @@ namespace HouseSelfInspection.Migrations
                     b.ToTable("Houses");
                 });
 
+            modelBuilder.Entity("HouseSelfInspection.Models.ImageModel", b =>
+                {
+                    b.Property<int>("ImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("HouseId");
+
+                    b.Property<string>("ImageUrl");
+
+                    b.Property<int>("SectionId");
+
+                    b.Property<int>("SubmittedBy");
+
+                    b.Property<DateTime>("SubmittedDate");
+
+                    b.HasKey("ImageId");
+
+                    b.ToTable("Images");
+                });
+
             modelBuilder.Entity("HouseSelfInspection.Models.InspectionScheduleModel", b =>
                 {
                     b.Property<int>("InspectionScheduleId")
@@ -77,6 +138,27 @@ namespace HouseSelfInspection.Migrations
                     b.ToTable("InspectionSchedules");
                 });
 
+            modelBuilder.Entity("HouseSelfInspection.Models.InspectionSubmitModel", b =>
+                {
+                    b.Property<int>("InspectionUploadId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("HouseId");
+
+                    b.Property<int>("ImageId");
+
+                    b.Property<DateTime>("InspectionSubmittedDate");
+
+                    b.Property<int>("SectionId");
+
+                    b.Property<int>("TenantId");
+
+                    b.HasKey("InspectionUploadId");
+
+                    b.ToTable("InspectionSubmits");
+                });
+
             modelBuilder.Entity("HouseSelfInspection.Models.LoginModel", b =>
                 {
                     b.Property<int>("User_ID")
@@ -92,6 +174,62 @@ namespace HouseSelfInspection.Migrations
                     b.HasKey("User_ID");
 
                     b.ToTable("Login");
+                });
+
+            modelBuilder.Entity("HouseSelfInspection.Models.Static_Models.HouseSectionModel", b =>
+                {
+                    b.Property<int>("HouseSectionId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("HouseSectionName")
+                        .IsRequired();
+
+                    b.HasKey("HouseSectionId");
+
+                    b.ToTable("HouseSections");
+                });
+
+            modelBuilder.Entity("HouseSelfInspection.Models.Static_Models.HouseTypeModel", b =>
+                {
+                    b.Property<int>("HouseTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("HouseType")
+                        .IsRequired();
+
+                    b.HasKey("HouseTypeId");
+
+                    b.ToTable("HouseTypes");
+                });
+
+            modelBuilder.Entity("HouseSelfInspection.Models.Static_Models.RoleModel", b =>
+                {
+                    b.Property<int>("RoleId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("RoleName")
+                        .IsRequired();
+
+                    b.HasKey("RoleId");
+
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("HouseSelfInspection.Models.Static_Models.StateModel", b =>
+                {
+                    b.Property<int>("StateId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("State")
+                        .IsRequired();
+
+                    b.HasKey("StateId");
+
+                    b.ToTable("States");
                 });
 
             modelBuilder.Entity("HouseSelfInspection.Models.TenantModel", b =>

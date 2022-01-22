@@ -13,10 +13,8 @@ namespace HouseSelfInspection.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int InspectionScheduleId { get; set; }
 
-
         [Required]
         public int HouseId { get; set; }
-
 
         [Required]
         public int TenantId { get; set; }

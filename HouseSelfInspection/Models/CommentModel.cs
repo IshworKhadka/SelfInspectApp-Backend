@@ -7,20 +7,21 @@ using System.Threading.Tasks;
 
 namespace HouseSelfInspection.Models
 {
-    public class ImageModel
+    public class CommentModel
     {
+
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ImageId { get; set; }
+        public int CommentID { get; set; }
 
-        public string ImageUrl { get; set; }
+        public int ActivityId { get; set; }
 
-        public int SubmittedBy { get; set; }
+        public string CommentDesciption { get; set; }
 
-        public DateTime SubmittedDate { get; set; }
+        public int CommentUserId { get; set; }
 
-        public int HouseId { get; set; }
+        public DateTime CommentDateTime { get; set; }
 
-        public int SectionId { get; set; }
     }
 }
