@@ -1,20 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using HouseSelfInspection.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace HouseSelfInspection.Controllers
 {
-
-    public class Credentials
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
-    }
 
     [Produces("application/json")]
     [Route("api/account")]
@@ -31,8 +29,29 @@ namespace HouseSelfInspection.Controllers
 
         }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] ApplicationUserModel credentials)
+        {
+            try
+            {
+                var result = await signInManager.PasswordSignInAsync(credentials.Email, credentials.Password, false, false);
+
+                if (!result.Succeeded)
+                    return BadRequest();
+
+                var user = await userManager.FindByEmailAsync(credentials.Email);
+
+                return Ok(CreateToken(user));
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody] Credentials credentials)
+        public async Task<IActionResult> Register([FromBody] ApplicationUserModel credentials)
         {
             try
             {
@@ -44,8 +63,8 @@ namespace HouseSelfInspection.Controllers
 
                 await signInManager.SignInAsync(user, isPersistent: false);
 
-                var jwt = new JwtSecurityToken();
-                return Ok(new JwtSecurityTokenHandler().WriteToken(jwt));
+                return Ok(CreateToken(user));
+
             }
             catch (Exception ex)
             {
@@ -55,5 +74,22 @@ namespace HouseSelfInspection.Controllers
            
 
         }
+
+        string CreateToken(IdentityUser user)
+        {
+            var claims = new Claim[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id)
+            };
+
+            var sigingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("this is the secret phrase"));
+
+            var signingCredentials = new SigningCredentials(sigingKey, SecurityAlgorithms.HmacSha256);
+            var jwt = new JwtSecurityToken(signingCredentials: signingCredentials, claims: claims);
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
+        }
+
+
+
     }
 }

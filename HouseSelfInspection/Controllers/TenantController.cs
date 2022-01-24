@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using HouseSelfInspection.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,7 @@ namespace HouseSelfInspection.Controllers
             this.context = context;
         }
 
+        [Authorize]
         [HttpGet]
         public ActionResult<IEnumerable<TenantModel>> Get()
         {

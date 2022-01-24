@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HouseSelfInspection.Models.Static_Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HouseSelfInspection.Controllers
@@ -10,11 +11,27 @@ namespace HouseSelfInspection.Controllers
     [ApiController]
     public class ValuesController : Controller
     {
-        // GET api/values
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+
+        private readonly ApplicationContext context;
+
+        public ValuesController(ApplicationContext context)
         {
-            return new string[] { "value1", "value2" };
+            this.context = context;
+        }
+
+        //GET api/values
+        [HttpGet]
+        public ActionResult<IEnumerable<HouseSectionModel>> Get()
+        {
+            try
+            {
+                return context.HouseSections;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
 
         // GET api/values/5

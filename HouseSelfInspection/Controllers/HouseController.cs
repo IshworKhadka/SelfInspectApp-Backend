@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using HouseSelfInspection.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ namespace HouseSelfInspection.Controllers
             this.context = context;
         }
 
+        [Authorize]
         [HttpGet]
         public ActionResult<IEnumerable<HouseModel>> Get()
         {
@@ -55,11 +57,13 @@ namespace HouseSelfInspection.Controllers
             }
         }
 
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] HouseModel model)
         {
             try
             {
+                var userId = HttpContext.User.Claims.First().Value;
                 context.Houses.Add(model);
                 await context.SaveChangesAsync();
                 return Ok(model);

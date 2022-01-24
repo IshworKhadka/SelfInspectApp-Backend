@@ -13,7 +13,14 @@ namespace HouseSelfInspection.Controllers
     [Route("api/inspectionsubmit/upload")]
     [ApiController]
     public class InspectionSubmitController : ControllerBase
-    { 
+    {
+
+        private readonly ApplicationContext context;
+
+        public InspectionSubmitController(ApplicationContext context)
+        {
+            this.context = context;
+        }
 
         //[HttpPost("FromForm"), DisableRequestSizeLimit]
         [HttpPost]

@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using HouseSelfInspection.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HouseSelfInspection
 {
@@ -15,5 +12,9 @@ namespace HouseSelfInspection
         {
 
         }
+
+        public DbSet<ApplicationUserModel> ApplicationUsers { get; set; }
+
+
     }
 }

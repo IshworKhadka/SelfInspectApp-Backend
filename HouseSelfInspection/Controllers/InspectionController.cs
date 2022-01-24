@@ -1,4 +1,5 @@
 ﻿using HouseSelfInspection.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -27,6 +28,7 @@ namespace HouseSelfInspection.Controllers
             return View();
         }
 
+        [Authorize]
         [HttpGet]
         public ActionResult<IEnumerable<InspectionScheduleModel>> Get()
         {
