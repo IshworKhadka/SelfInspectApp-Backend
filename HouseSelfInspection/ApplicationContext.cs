@@ -19,7 +19,6 @@ namespace HouseSelfInspection
         public DbSet<ImageModel> Images { get; set; }
         public DbSet<InspectionScheduleModel> InspectionSchedules { get; set; }
         public DbSet<InspectionSubmitModel> InspectionSubmits { get; set; }
-        public DbSet<LoginModel> Login { get; set; }
         public DbSet<TenantModel> Tenants { get; set; }
         public DbSet<HouseSectionModel> HouseSections { get; set; }
         public DbSet<HouseTypeModel> HouseTypes { get; set; }

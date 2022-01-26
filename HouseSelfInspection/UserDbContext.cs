@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HouseSelfInspection
 {
-    public class UserDbContext: IdentityDbContext<IdentityUser>
+    public class UserDbContext: IdentityDbContext<ApplicationUserModel>
     {
 
         public UserDbContext(DbContextOptions<UserDbContext> options) : base(options)

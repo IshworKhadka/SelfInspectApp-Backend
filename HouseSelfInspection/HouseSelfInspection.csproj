@@ -7,6 +7,8 @@
   <ItemGroup>
     <Compile Remove="Migrations\20220122061842_SIA_Migration.cs" />
     <Compile Remove="Migrations\20220122061842_SIA_Migration.Designer.cs" />
+    <Compile Remove="Migrations\UserDb\20220126074305_UserDBMigration.cs" />
+    <Compile Remove="Migrations\UserDb\20220126074305_UserDBMigration.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

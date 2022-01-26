@@ -25,7 +25,7 @@ namespace HouseSelfInspection.Controllers
             this.context = context;
         }
 
-        [Authorize]
+        
         [HttpGet]
         public ActionResult<IEnumerable<TenantModel>> Get()
         {
