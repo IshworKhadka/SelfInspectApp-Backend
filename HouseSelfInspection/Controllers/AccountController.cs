@@ -1,5 +1,6 @@
 ﻿using HouseSelfInspection.Models;
 using HouseSelfInspection.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +43,49 @@ namespace HouseSelfInspection.Controllers
 
         }
 
+        [HttpPost("invite")]
+        public async Task<IActionResult> EmailConfirm(string userId)
+        {
+            userId = "34886e04-b323-4cdd-a735-7688c7a7281c";
+            var userExists = await _userManager.FindByIdAsync(userId);
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(userExists);
+
+            var confirmationLink = Url.Action("InviteUser", "Account", new {
+                userId = userExists.Id, token = token
+            }, Request.Scheme);
+
+            EmailSender emailSender = new EmailSender();
+            await emailSender.SendEmailAsync(userExists.Email, "Welcome to Self Inspect App", "Please click on the link " + confirmationLink);
+            return Ok();
+
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<ActionResult> InviteUser(string userId, string token)
+        {
+            if(userId == null || token == null)
+            {
+                return BadRequest("User not verified");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if(user == null)
+            {
+                return BadRequest($"The User ID {userId} is invalid");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest("Not succeeded");
+            }
+
+            return Ok("User Registration Successful");
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserViewModel credentials)
         {
@@ -58,6 +102,7 @@ namespace HouseSelfInspection.Controllers
                     var tokenValue = await GenerateTokenAsync(userExists);
                     return Ok(tokenValue);
                 }
+
                 return Unauthorized();
 
                 //Using Signinmanager
@@ -180,7 +225,7 @@ namespace HouseSelfInspection.Controllers
                     SecurityStamp = Guid.NewGuid().ToString(),
 
                     //Delete later
-                    EmailConfirmed = true,
+                    //EmailConfirmed = true,
                     RoleId = 3,
 
                     
@@ -257,7 +302,7 @@ namespace HouseSelfInspection.Controllers
 
 
 
-        [HttpGet]
+        [HttpGet("get-all")]
         public ActionResult<IEnumerable<RegisterUserViewModel>> GetUsers()
         {
             try
