@@ -3,6 +3,7 @@ using HouseSelfInspection.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -26,16 +27,18 @@ namespace HouseSelfInspection.Controllers
         readonly SignInManager<ApplicationUserModel> _signInManager;
 
         //readonly RoleManager<ApplicationUserModel> _roleManager;
-        readonly ApplicationContext _context;
+        readonly UserDbContext _context;
         readonly IConfiguration _configuration;
+        readonly TokenValidationParameters _tokenValidationParameters;
 
-        public AccountController(UserManager<ApplicationUserModel> userManager, SignInManager<ApplicationUserModel> signInManager, ApplicationContext context, IConfiguration configuration)
+        public AccountController(UserManager<ApplicationUserModel> userManager, SignInManager<ApplicationUserModel> signInManager, UserDbContext context, IConfiguration configuration, TokenValidationParameters tokenValidationParameters)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             //_roleManager = roleManager;
             _context = context;
             _configuration = configuration;
+            _tokenValidationParameters = tokenValidationParameters;
 
         }
 
@@ -50,12 +53,10 @@ namespace HouseSelfInspection.Controllers
                 //Using Usermanager
                 var userExists = await _userManager.FindByEmailAsync(credentials.Email);
 
-                //Delete this later
-                userExists.EmailConfirmed = true;
-
                 if(userExists != null && userExists.EmailConfirmed && await _userManager.CheckPasswordAsync(userExists, credentials.Password))
                 {
-                    return Ok(CreateToken(userExists));
+                    var tokenValue = await GenerateTokenAsync(userExists);
+                    return Ok(tokenValue);
                 }
                 return Unauthorized();
 
@@ -75,6 +76,44 @@ namespace HouseSelfInspection.Controllers
                 throw ex;
             }
         }
+
+        //[HttpPost("refresh-token")]
+        //public async Task<IActionResult> RefreshToken([FromBody] TokenRequestVM tokenRequestVM)
+        //{
+        //    try
+        //    {
+        //        if (!ModelState.IsValid)
+        //            return BadRequest("Please provide all fields");
+
+        //        var result = await VerifyAndGenerateTOkenAsync(tokenRequestVM);
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        throw ex;
+        //    }
+        //}
+
+        //private async Task<AuthResultVM> VerifyAndGenerateTOkenAsync(TokenRequestVM tokenRequestVM)
+        //{
+        //    var jwtTokenHandler = new JwtSecurityTokenHandler();
+        //    var storedToken = await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == tokenRequestVM.RefreshToken);
+        //    var dbUser = await _userManager.FindByIdAsync(storedToken.UserId);
+
+        //    try
+        //    {
+        //        var tokenCheckRsult = jwtTokenHandler.ValidateToken(tokenRequestVM.Token, _tokenValidationParameters, out var validatedToken);
+
+        //    }
+        //    catch (SecurityTokenExpiredException)
+        //    {
+
+        //        if(storedToken.DateExpire >= DateTime.UtcNow)
+        //        {
+        //            await GenerateTokenAsync(dbUser);
+        //        }
+        //    }
+        //}
 
         [HttpPut("{userId}")]
         public async Task<IActionResult> Put(string userId, [FromBody] RegisterUserViewModel registerVM)
@@ -154,7 +193,7 @@ namespace HouseSelfInspection.Controllers
 
                 await _signInManager.SignInAsync(newUser, isPersistent: false);
 
-                return Ok(CreateToken(newUser));
+                return Ok(GenerateTokenAsync(newUser));
 
             }
             catch (Exception ex)
@@ -166,22 +205,57 @@ namespace HouseSelfInspection.Controllers
 
         }
 
-        string CreateToken(ApplicationUserModel user)
+        private async Task<AuthResultVM> GenerateTokenAsync(ApplicationUserModel user)
         {
-            var claims = new Claim[]
+            var authClaims = new Claim[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id)
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.NameIdentifier, user.Email),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var sigingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("this is the secret phrase"));
+            var authSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["JWT:Secret"]));
 
-            var signingCredentials = new SigningCredentials(sigingKey, SecurityAlgorithms.HmacSha256);
-            var jwt = new JwtSecurityToken(signingCredentials: signingCredentials, claims: claims);
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
+            var token = new JwtSecurityToken
+             (
+                issuer: _configuration["JWT:Issuer"],
+                audience: _configuration["JWT:Audience"],
+                expires: DateTime.UtcNow.AddMinutes(10),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+             );
+
+            var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+            var refreshToken = new RefreshTokenModel()
+            {
+                JwtId = token.Id,
+                IsRevoked = false,
+                UserId = user.Id,
+                DateAdded = DateTime.UtcNow,
+                DateExpire = DateTime.UtcNow.AddMonths(6),
+                Token = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString()
+            };
+
+            await _context.RefreshTokens.AddAsync(refreshToken);
+            await _context.SaveChangesAsync();
+
+            var response = new AuthResultVM()
+            {
+                Token = jwtToken,
+                RefreshToken = refreshToken.Token,
+                ExpiresAt = token.ValidTo
+            };
+
+            var result = response;
+
+            return result;
         }
 
 
-        
+
 
         [HttpGet]
         public ActionResult<IEnumerable<RegisterUserViewModel>> GetUsers()

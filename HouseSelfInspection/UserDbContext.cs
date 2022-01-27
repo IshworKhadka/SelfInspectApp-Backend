@@ -13,7 +13,7 @@ namespace HouseSelfInspection
 
         }
 
-        public DbSet<ApplicationUserModel> ApplicationUsers { get; set; }
+        public DbSet<RefreshTokenModel> RefreshTokens { get; set; }
 
 
     }

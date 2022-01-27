@@ -48,6 +48,23 @@ namespace HouseSelfInspection
             services.AddDbContext<UserDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
 
 
+            var tokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:Secret"])),
+
+                ValidateAudience = true,
+                ValidAudience = Configuration["JWT:Audience"],
+
+                ValidateIssuer = true,
+                ValidIssuer = Configuration["JWT:Issuer"],
+
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+
+            };
+            services.AddSingleton(tokenValidationParameters);
+
             //Add Identity
             services.AddIdentity<ApplicationUserModel, IdentityRole>()
                 .AddEntityFrameworkStores<UserDbContext>()
@@ -69,7 +86,7 @@ namespace HouseSelfInspection
 
             //Issuer Signingkey: JWT Authentication
             //Configuration["JWT:Secret"].ToString()
-            var sigingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("this is the secret phrase"));
+            //var sigingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("this is the secret phrase"));
 
 
             //Add Authentication 
@@ -84,21 +101,7 @@ namespace HouseSelfInspection
                 {
                     cfg.RequireHttpsMetadata = false;
                     cfg.SaveToken = true;
-                    cfg.TokenValidationParameters = new TokenValidationParameters()
-                    {
-
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"])),
-
-                        ValidateAudience = true,
-                        ValidAudience = Configuration["JWT:Audience"],
-
-                        ValidateIssuer = true,
-                        ValidIssuer = Configuration["JWT:Issuer"],
-
-                        ValidateLifetime = false,
-                        
-                    };
+                    cfg.TokenValidationParameters = tokenValidationParameters;
                 });
            
 
