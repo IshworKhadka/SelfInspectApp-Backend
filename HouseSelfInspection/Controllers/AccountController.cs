@@ -44,17 +44,18 @@ namespace HouseSelfInspection.Controllers
         }
 
         [HttpPost("invite")]
-        public async Task<IActionResult> EmailConfirm(string userId)
+        public async Task<IActionResult> EmailConfirm(string email)
         {
-            userId = "34886e04-b323-4cdd-a735-7688c7a7281c";
-            var userExists = await _userManager.FindByIdAsync(userId);
+
+            email = "mrsakarmaharjan@gmail.com";
+            var userExists = await _userManager.FindByEmailAsync(email);
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(userExists);
 
             var confirmationLink = Url.Action("InviteUser", "Account", new {
                 userId = userExists.Id, token = token
             }, Request.Scheme);
 
-            EmailSender emailSender = new EmailSender();
+            EmailSender emailSender = new EmailSender(_configuration);
             await emailSender.SendEmailAsync(userExists.Email, "Welcome to Self Inspect App", "Please click on the link " + confirmationLink);
             return Ok();
 

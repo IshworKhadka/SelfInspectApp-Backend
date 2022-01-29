@@ -85,7 +85,7 @@ namespace HouseSelfInspection.Controllers
                 {
                     return BadRequest();
                 }
-
+                
                 context.Entry(model).State = EntityState.Modified;
                 await context.SaveChangesAsync();
                 return Ok(model);
@@ -96,6 +96,46 @@ namespace HouseSelfInspection.Controllers
                 throw ex;
             }
             
+        }
+
+        [HttpPut("upload/{houseId}"), DisableRequestSizeLimit]
+        public async Task<string> Put(int houseId)
+        {
+            try
+            {
+                var file = Request.Form.Files[0];
+                var folderName = Path.Combine("App_Data", "Images");
+                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                if (file.Length > 0)
+                {
+                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                    var fullPath = Path.Combine(pathToSave, fileName);
+                    var dbPath = Path.Combine(folderName, fileName);
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+
+                    HouseModel model = await context.Houses.FindAsync(houseId);
+                    model.ImgPath = dbPath;
+                    context.Houses.Update(model);
+                    await context.SaveChangesAsync();
+                    return fullPath;
+                }
+                else
+                {
+                    return "Not successful";
+                }
+
+
+            }
+
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
         }
 
 
