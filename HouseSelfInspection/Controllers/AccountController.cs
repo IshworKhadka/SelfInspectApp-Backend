@@ -1,7 +1,11 @@
 ﻿using HouseSelfInspection.Models;
+using HouseSelfInspection.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -20,28 +24,97 @@ namespace HouseSelfInspection.Controllers
     public class AccountController : Controller
     {
 
-        readonly UserManager<IdentityUser> userManager;
-        readonly SignInManager<IdentityUser> signInManager;
-        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        readonly UserManager<ApplicationUserModel> _userManager;
+        readonly SignInManager<ApplicationUserModel> _signInManager;
+
+        //readonly RoleManager<ApplicationUserModel> _roleManager;
+        readonly UserDbContext _context;
+        readonly IConfiguration _configuration;
+        readonly TokenValidationParameters _tokenValidationParameters;
+
+        public AccountController(UserManager<ApplicationUserModel> userManager, SignInManager<ApplicationUserModel> signInManager, UserDbContext context, IConfiguration configuration, TokenValidationParameters tokenValidationParameters)
         {
-            this.userManager = userManager;
-            this.signInManager = signInManager;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            //_roleManager = roleManager;
+            _context = context;
+            _configuration = configuration;
+            _tokenValidationParameters = tokenValidationParameters;
 
         }
 
+        [HttpPost("invite")]
+        public async Task<IActionResult> EmailConfirm(string email)
+        {
+
+            email = "mrsakarmaharjan@gmail.com";
+            var userExists = await _userManager.FindByEmailAsync(email);
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(userExists);
+
+            var confirmationLink = Url.Action("InviteUser", "Account", new {
+                userId = userExists.Id, token = token
+            }, Request.Scheme);
+
+            EmailSender emailSender = new EmailSender(_configuration);
+            await emailSender.SendEmailAsync(userExists.Email, "Welcome to Self Inspect App", "Please click on the link " + confirmationLink);
+            return Ok();
+
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<ActionResult> InviteUser(string userId, string token)
+        {
+            if(userId == null || token == null)
+            {
+                return BadRequest("User not verified");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if(user == null)
+            {
+                return BadRequest($"The User ID {userId} is invalid");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest("Not succeeded");
+            }
+
+            return Ok("User Registration Successful");
+        }
+
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] ApplicationUserModel credentials)
+        public async Task<IActionResult> Login([FromBody] LoginUserViewModel credentials)
         {
             try
             {
-                var result = await signInManager.PasswordSignInAsync(credentials.Email, credentials.Password, false, false);
+                if (!ModelState.IsValid)
+                    return BadRequest("Please provide all fields");
 
-                if (!result.Succeeded)
-                    return BadRequest();
+                //Using Usermanager
+                var userExists = await _userManager.FindByEmailAsync(credentials.Email);
 
-                var user = await userManager.FindByEmailAsync(credentials.Email);
+                if(userExists != null && userExists.EmailConfirmed && await _userManager.CheckPasswordAsync(userExists, credentials.Password))
+                {
+                    var tokenValue = await GenerateTokenAsync(userExists);
+                    return Ok(tokenValue);
+                }
 
-                return Ok(CreateToken(user));
+                return Unauthorized();
+
+                //Using Signinmanager
+                //var result = await _signInManager.PasswordSignInAsync(credentials.Username, credentials.Password, false, false);
+
+                //if (!result.Succeeded)
+                //    return BadRequest();
+
+                //var user = await _userManager.FindByEmailAsync(credentials.Username);
+
+                //return Ok(CreateToken(user));
             }
             catch (Exception ex)
             {
@@ -50,20 +123,123 @@ namespace HouseSelfInspection.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Register([FromBody] ApplicationUserModel credentials)
+        //[HttpPost("refresh-token")]
+        //public async Task<IActionResult> RefreshToken([FromBody] TokenRequestVM tokenRequestVM)
+        //{
+        //    try
+        //    {
+        //        if (!ModelState.IsValid)
+        //            return BadRequest("Please provide all fields");
+
+        //        var result = await VerifyAndGenerateTOkenAsync(tokenRequestVM);
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        throw ex;
+        //    }
+        //}
+
+        //private async Task<AuthResultVM> VerifyAndGenerateTOkenAsync(TokenRequestVM tokenRequestVM)
+        //{
+        //    var jwtTokenHandler = new JwtSecurityTokenHandler();
+        //    var storedToken = await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == tokenRequestVM.RefreshToken);
+        //    var dbUser = await _userManager.FindByIdAsync(storedToken.UserId);
+
+        //    try
+        //    {
+        //        var tokenCheckRsult = jwtTokenHandler.ValidateToken(tokenRequestVM.Token, _tokenValidationParameters, out var validatedToken);
+
+        //    }
+        //    catch (SecurityTokenExpiredException)
+        //    {
+
+        //        if(storedToken.DateExpire >= DateTime.UtcNow)
+        //        {
+        //            await GenerateTokenAsync(dbUser);
+        //        }
+        //    }
+        //}
+
+        [HttpPut("{userId}")]
+        public async Task<IActionResult> Put(string userId, [FromBody] RegisterUserViewModel registerVM)
         {
             try
             {
-                var user = new IdentityUser { UserName = credentials.Email, Email = credentials.Email };
-                var result = await userManager.CreateAsync(user, credentials.Password);
+                if (!userId.Equals(registerVM.UserId))
+                {
+                    return BadRequest();
+                }
+
+                if (!ModelState.IsValid)
+                    return BadRequest("Please, provide all the required fields");
+
+                ApplicationUserModel userExists = await _userManager.FindByIdAsync(registerVM.UserId);
+
+                if (userExists == null)
+                    return BadRequest("The user doesnot exist");
+
+                userExists.Name = registerVM.Name;
+                userExists.Email = registerVM.Email;
+                userExists.PhoneNumber = registerVM.Contact;
+                userExists.StartDate = registerVM.StartDate;
+                userExists.UserName = registerVM.Email;
+                userExists.HouseId = registerVM.HouseId;
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(userExists);
+
+                var reset = await _userManager.ResetPasswordAsync(userExists, token, registerVM.Password);
+
+                return Ok(_userManager.UpdateAsync(userExists));
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUserViewModel registerVM)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest("Please, provide all the required fields");
+
+                var userExists = await _userManager.FindByEmailAsync(registerVM.Email);
+
+                if (userExists != null)
+                    return BadRequest($"User {registerVM.Email} already exists");
+
+
+                ApplicationUserModel newUser = new ApplicationUserModel
+                {
+                    Name = registerVM.Name,
+                    PhoneNumber = registerVM.Contact,
+                    Email = registerVM.Email,
+                    UserName = registerVM.Email,
+                    StartDate = registerVM.StartDate,
+                    HouseId = registerVM.HouseId,
+                    SecurityStamp = Guid.NewGuid().ToString(),
+
+                    //Delete later
+                    //EmailConfirmed = true,
+                    RoleId = 3,
+
+                    
+                };
+
+                var result = await _userManager.CreateAsync(newUser, registerVM.Password);
 
                 if (!result.Succeeded)
                     return BadRequest(result.Errors);
 
-                await signInManager.SignInAsync(user, isPersistent: false);
+                await _signInManager.SignInAsync(newUser, isPersistent: false);
 
-                return Ok(CreateToken(user));
+                return Ok(GenerateTokenAsync(newUser));
 
             }
             catch (Exception ex)
@@ -75,18 +251,131 @@ namespace HouseSelfInspection.Controllers
 
         }
 
-        string CreateToken(IdentityUser user)
+        private async Task<AuthResultVM> GenerateTokenAsync(ApplicationUserModel user)
         {
-            var claims = new Claim[]
+            var authClaims = new Claim[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id)
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.NameIdentifier, user.Email),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var sigingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("this is the secret phrase"));
+            var authSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["JWT:Secret"]));
 
-            var signingCredentials = new SigningCredentials(sigingKey, SecurityAlgorithms.HmacSha256);
-            var jwt = new JwtSecurityToken(signingCredentials: signingCredentials, claims: claims);
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
+            var token = new JwtSecurityToken
+             (
+                issuer: _configuration["JWT:Issuer"],
+                audience: _configuration["JWT:Audience"],
+                expires: DateTime.UtcNow.AddMinutes(10),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+             );
+
+            var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+            var refreshToken = new RefreshTokenModel()
+            {
+                JwtId = token.Id,
+                IsRevoked = false,
+                UserId = user.Id,
+                DateAdded = DateTime.UtcNow,
+                DateExpire = DateTime.UtcNow.AddMonths(6),
+                Token = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString()
+            };
+
+            await _context.RefreshTokens.AddAsync(refreshToken);
+            await _context.SaveChangesAsync();
+
+            var response = new AuthResultVM()
+            {
+                Token = jwtToken,
+                RefreshToken = refreshToken.Token,
+                ExpiresAt = token.ValidTo
+            };
+
+            var result = response;
+
+            return result;
+        }
+
+
+
+
+        [HttpGet("get-all")]
+        public ActionResult<IEnumerable<RegisterUserViewModel>> GetUsers()
+        {
+            try
+            {
+                List<RegisterUserViewModel> userlist = new List<RegisterUserViewModel>();
+
+                foreach (var item in _userManager.Users.ToList())
+                {
+                    userlist.Add(
+                        new RegisterUserViewModel()
+                        {
+                            UserId = item.Id,
+                            Name = item.Name,
+                            Contact = item.PhoneNumber,
+                            Email = item.Email,
+                            StartDate = item.StartDate,
+                            Username = item.UserName,
+                            HouseId = item.HouseId
+                        }
+                    );
+                }
+
+                return userlist;
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<RegisterUserViewModel>> GetByIdAsync(String id)
+        {
+            try
+            {
+                ApplicationUserModel item = await _userManager.FindByIdAsync(id);
+                return new RegisterUserViewModel()
+                {
+                    Name = item.Name,
+                    Contact = item.PhoneNumber,
+                    Email = item.Email,
+                    StartDate = item.StartDate,
+                    Username = item.UserName,
+                    HouseId = item.HouseId
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                ApplicationUserModel item = await _userManager.FindByIdAsync(id);
+                return Ok(await _userManager.DeleteAsync(item));
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
 
 
