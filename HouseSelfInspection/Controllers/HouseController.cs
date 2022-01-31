@@ -167,13 +167,17 @@ namespace HouseSelfInspection.Controllers
         }
 
 
-        [HttpPost("FromForm"), DisableRequestSizeLimit]
-        public IActionResult Upload()
+        [HttpPost("Upload"), DisableRequestSizeLimit]
+        public async Task<IActionResult> Upload([FromForm] ImageModel imgModel)
         {
             try
             {
                 var files = Request.Form.Files;
-                var folderName = Path.Combine("App_Data", "Images");
+                var folderName = Path.Combine(env.WebRootPath, "House", "Images");
+                if (!Directory.Exists(folderName))
+                {
+                    Directory.CreateDirectory(folderName);
+                }
                 var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
 
                 if (files.Any(f => f.Length == 0))
@@ -181,15 +185,24 @@ namespace HouseSelfInspection.Controllers
                     return BadRequest();
                 }
 
-                foreach (var file in files)
+                if (files.Count > 0)
                 {
-                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
-                    var fullPath = Path.Combine(pathToSave, fileName);
-                    var dbPath = Path.Combine(folderName, fileName);
-
-                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    foreach (var file in files)
                     {
-                        file.CopyTo(stream);
+                        var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                        var fullPath = Path.Combine(pathToSave, fileName);
+                        var dbPath = Path.Combine(folderName, fileName);
+                        using (var stream = new FileStream(fullPath, FileMode.Create))
+                        {
+                            file.CopyTo(stream);
+                        }
+
+                        var filePath = "http://" + HttpContext.Request.Host.Value + "/House/Images/" + fileName;
+
+                        imgModel.ImageUrl = filePath;
+                        context.Images.Add(imgModel);
+                        await context.SaveChangesAsync();
+
                     }
                 }
 
