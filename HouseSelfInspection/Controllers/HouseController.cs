@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using HouseSelfInspection.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +20,14 @@ namespace HouseSelfInspection.Controllers
     public class HouseController : Controller
     {
 
+        private readonly IHostingEnvironment env;
         private readonly ApplicationContext context;
 
-        public HouseController(ApplicationContext context)
+        public HouseController(ApplicationContext context,
+            IHostingEnvironment env)
         {
             this.context = context;
+            this.env = env;
         }
 
        
@@ -104,23 +108,30 @@ namespace HouseSelfInspection.Controllers
             try
             {
                 var file = Request.Form.Files[0];
-                var folderName = Path.Combine("App_Data", "Images");
+                var folderName = Path.Combine(env.WebRootPath, "house", "Images");
+                if (!Directory.Exists(folderName))
+                {
+                    Directory.CreateDirectory(folderName);
+                }
                 var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
                 if (file.Length > 0)
                 {
-                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                    var filePath = string.Empty;
+                    //var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
                     var fullPath = Path.Combine(pathToSave, fileName);
                     var dbPath = Path.Combine(folderName, fileName);
                     using (var stream = new FileStream(fullPath, FileMode.Create))
                     {
                         file.CopyTo(stream);
                     }
+                    filePath = "http://" + HttpContext.Request.Host.Value + "/house/Images/" + fileName;
 
                     HouseModel model = await context.Houses.FindAsync(houseId);
-                    model.ImgPath = dbPath;
+                    model.ImgPath = filePath;
                     context.Houses.Update(model);
                     await context.SaveChangesAsync();
-                    return fullPath;
+                    return filePath;
                 }
                 else
                 {

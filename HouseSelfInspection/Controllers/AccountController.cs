@@ -43,12 +43,12 @@ namespace HouseSelfInspection.Controllers
 
         }
 
-        [HttpPost("invite")]
-        public async Task<IActionResult> EmailConfirm(string email)
+        [HttpPut("EmailConfirm")]
+        public async Task<IActionResult> EmailConfirm([FromBody] MailRequestModel model)
         {
-
-            email = "mrsakarmaharjan@gmail.com";
-            var userExists = await _userManager.FindByEmailAsync(email);
+           
+            model.ToEmail = "mrsakarmaharjan@gmail.com";
+            var userExists = await _userManager.FindByEmailAsync(model.ToEmail);
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(userExists);
 
             var confirmationLink = Url.Action("InviteUser", "Account", new {
