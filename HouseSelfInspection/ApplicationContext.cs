@@ -26,6 +26,8 @@ namespace HouseSelfInspection
         public DbSet<StateModel> States { get; set; }
         public DbSet<ActivityModel> Activities { get; set; }
         public DbSet<CommentModel> Comments { get; set; }
+        public DbSet<MenuModel> Menus { get; set; }
+        public DbSet<RoleMenuModel> RoleMenus { get; set; }
 
     }
 }
