@@ -292,7 +292,8 @@ namespace HouseSelfInspection.Controllers
             {
                 Token = jwtToken,
                 RefreshToken = refreshToken.Token,
-                ExpiresAt = token.ValidTo
+                ExpiresAt = token.ValidTo,
+                UserDetail = user
             };
 
             var result = response;
