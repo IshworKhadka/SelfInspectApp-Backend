@@ -1,4 +1,5 @@
-﻿using HouseSelfInspection.Models;
+﻿using HouseSelfInspection.HubConfig;
+using HouseSelfInspection.Models;
 using HouseSelfInspection.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,6 +24,7 @@ namespace HouseSelfInspection.Controllers
     [ApiController]
     public class AccountController : Controller
     {
+        private readonly ApplicationContext ctx;
 
         readonly UserManager<ApplicationUserModel> _userManager;
         readonly SignInManager<ApplicationUserModel> _signInManager;
@@ -98,7 +100,7 @@ namespace HouseSelfInspection.Controllers
                 //Using Usermanager
                 var userExists = await _userManager.FindByEmailAsync(credentials.Email);
 
-                if(userExists != null && userExists.EmailConfirmed && await _userManager.CheckPasswordAsync(userExists, credentials.Password))
+                if (userExists != null && userExists.EmailConfirmed && await _userManager.CheckPasswordAsync(userExists, credentials.Password))
                 {
                     var tokenValue = await GenerateTokenAsync(userExists);
                     return Ok(tokenValue);

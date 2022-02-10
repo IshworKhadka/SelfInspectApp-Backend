@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using HouseSelfInspection.HubConfig;
 
 namespace HouseSelfInspection
 {
@@ -42,6 +43,11 @@ namespace HouseSelfInspection
                 .AllowAnyMethod();
             }));
 
+            //signalr
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
 
             //Configure DbContext with SQL
             //services.AddDbContext<ApplicationContext>(options => options.UseInMemoryDatabase("house"));
@@ -83,7 +89,6 @@ namespace HouseSelfInspection
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            
 
             //Issuer Signingkey: JWT Authentication
             //Configuration["JWT:Secret"].ToString()
@@ -151,6 +156,10 @@ namespace HouseSelfInspection
                 RequestPath = new PathString("/App_Data")
             });
 
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<HouseHub>("/toastr");
+            });
         }
     }
 }
