@@ -44,8 +44,6 @@ namespace HouseSelfInspection.HubConfig
 
                 var userExists = await _userManager.FindByEmailAsync(credentials.Email);
 
-                Context.Items.Add("userID", userExists.Id);
-
                 if (userExists != null && userExists.EmailConfirmed && await _userManager.CheckPasswordAsync(userExists, credentials.Password))
                 {
                     ConnectionsModel currUser = new ConnectionsModel
@@ -105,9 +103,6 @@ namespace HouseSelfInspection.HubConfig
                 ChatUserVM newUser = new ChatUserVM(tempPerson.Id, tempPerson.Name, currSignalrID, tempPerson.RoleId);
                 await Clients.Caller.SendAsync("reauthMeResponse", newUser);
                 await Clients.Others.SendAsync("userOn", newUser);
-
-                Context.Items.Add("userID", tempPerson.Id);
-
             }
         } //end of reauthMe
 
