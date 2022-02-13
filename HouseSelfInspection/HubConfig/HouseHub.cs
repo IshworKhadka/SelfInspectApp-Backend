@@ -56,10 +56,13 @@ namespace HouseSelfInspection.HubConfig
                         RoleId = userExists.RoleId,
                         TimeStamp = DateTime.Now
                     };
+
+                    ctx.Connections.RemoveRange(ctx.Connections.Where(p => p.UserId == userExists.Id).ToList());
+                    ctx.SaveChanges();
+
                     await ctx.Connections.AddAsync(currUser);
                     await ctx.SaveChangesAsync();
-
-
+                    
                     ChatUserVM newUser = new ChatUserVM(userExists.Id, userExists.Name, currSignalrID, userExists.RoleId);
                     await Clients.Caller.SendAsync("authMeResponseSuccess", newUser);
                     await Clients.Others.SendAsync("userOn", newUser);
@@ -94,6 +97,9 @@ namespace HouseSelfInspection.HubConfig
                 };
                 await ctx.Connections.AddAsync(currUser);
                 await ctx.SaveChangesAsync();
+
+                ctx.Connections.RemoveRange(ctx.Connections.Where(p => p.UserId == personId).ToList());
+                ctx.SaveChanges();
 
                 Console.WriteLine(currSignalrID);
                 ChatUserVM newUser = new ChatUserVM(tempPerson.Id, tempPerson.Name, currSignalrID, tempPerson.RoleId);

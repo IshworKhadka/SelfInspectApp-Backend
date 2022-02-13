@@ -27,9 +27,14 @@ namespace HouseSelfInspection.HubConfig
             await Clients.Caller.SendAsync("getOnlineUsersResponse", onlineUsers);
         }
 
-        public async Task sendMsg(string connId, string msg)
+        public async Task sendMsg(string fromConnId, string connId, string msg)
         {
-            await Clients.Client(connId).SendAsync("sendMsgResponse", Context.ConnectionId, msg);
+            var msgData = new {
+                fromConnId= fromConnId,
+                toConnId = connId,
+                msg = msg
+            };
+            await Clients.All.SendAsync("sendMsgResponseCon", msgData);
         }
     }
 }
