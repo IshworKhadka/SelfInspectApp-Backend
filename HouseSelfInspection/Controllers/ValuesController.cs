@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HouseSelfInspection.Models;
 using HouseSelfInspection.Models.Static_Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HouseSelfInspection.Controllers
@@ -13,10 +15,12 @@ namespace HouseSelfInspection.Controllers
     {
 
         private readonly ApplicationContext context;
+        readonly UserManager<ApplicationUserModel> _userManager;
 
-        public ValuesController(ApplicationContext context)
+        public ValuesController(ApplicationContext context, UserManager<ApplicationUserModel> userManager)
         {
             this.context = context;
+            _userManager = userManager;
         }
 
         //GET api/values
@@ -26,6 +30,25 @@ namespace HouseSelfInspection.Controllers
             try
             {
                 return context.HouseSections;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+
+        [HttpGet("{id}")]
+        [Route("GetNameById")]
+        public async Task<string> GetNameById(string id)
+        {
+            try
+            {
+                ApplicationUserModel item = await _userManager.FindByIdAsync(id);
+                return item.UserName;
+
+
             }
             catch (Exception ex)
             {

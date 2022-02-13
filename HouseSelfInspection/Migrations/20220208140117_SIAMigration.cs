@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace HouseSelfInspection.Migrations
 {
-    public partial class SIA_Migration : Migration
+    public partial class SIAMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -94,7 +94,7 @@ namespace HouseSelfInspection.Migrations
                     ImageId = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     ImageUrl = table.Column<string>(nullable: true),
-                    SubmittedBy = table.Column<int>(nullable: false),
+                    SubmittedBy = table.Column<string>(nullable: true),
                     SubmittedDate = table.Column<DateTime>(nullable: false),
                     HouseId = table.Column<int>(nullable: false),
                     SectionId = table.Column<int>(nullable: false)
@@ -111,7 +111,7 @@ namespace HouseSelfInspection.Migrations
                     InspectionScheduleId = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     HouseId = table.Column<int>(nullable: false),
-                    TenantId = table.Column<int>(nullable: false),
+                    UserId = table.Column<string>(nullable: false),
                     Inspection_date = table.Column<DateTime>(nullable: false),
                     Inspection_status = table.Column<string>(nullable: true)
                 },
@@ -127,7 +127,7 @@ namespace HouseSelfInspection.Migrations
                     InspectionUploadId = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     HouseId = table.Column<int>(nullable: false),
-                    TenantId = table.Column<int>(nullable: false),
+                    UserId = table.Column<string>(nullable: true),
                     SectionId = table.Column<int>(nullable: false),
                     ImageId = table.Column<int>(nullable: false),
                     InspectionSubmittedDate = table.Column<DateTime>(nullable: false)
@@ -135,21 +135,6 @@ namespace HouseSelfInspection.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_InspectionSubmits", x => x.InspectionUploadId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Login",
-                columns: table => new
-                {
-                    User_ID = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    username = table.Column<string>(nullable: true),
-                    password = table.Column<string>(nullable: true),
-                    isAdmin = table.Column<bool>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Login", x => x.User_ID);
                 });
 
             migrationBuilder.CreateTable(
@@ -232,9 +217,6 @@ namespace HouseSelfInspection.Migrations
 
             migrationBuilder.DropTable(
                 name: "InspectionSubmits");
-
-            migrationBuilder.DropTable(
-                name: "Login");
 
             migrationBuilder.DropTable(
                 name: "Roles");

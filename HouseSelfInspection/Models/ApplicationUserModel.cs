@@ -22,5 +22,7 @@ namespace HouseSelfInspection.Models
         public int RoleId { get; set; }
 
         public string ImagePath { get; set; }
+
+        //public string ActivationToken { get; set; }
     }
 }

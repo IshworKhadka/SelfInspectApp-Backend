@@ -33,5 +33,7 @@ namespace HouseSelfInspection.Models.ViewModels
         public string Password { get; set; }
 
         public int HouseId { get; set; }
+
+        public string ImagePath { get; set; }
     }
 }

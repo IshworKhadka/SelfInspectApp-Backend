@@ -7,21 +7,15 @@ using System.Threading.Tasks;
 
 namespace HouseSelfInspection.Models
 {
-    public class InspectionScheduleModel
+    public class ConnectionsModel
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int InspectionScheduleId { get; set; }
-
-        [Required]
-        public int HouseId { get; set; }
-
-        [Required]
+        public int Id { get; set; }
         public string UserId { get; set; }
-
-        [Required]
-        public DateTime Inspection_date { get; set; }
-
-        public string Inspection_status { get; set; }
+        public string SignalrId { get; set; }
+        public string Name { get; set; }
+        public int RoleId { get; set; }
+        public DateTime TimeStamp { get; set; }
     }
 }
