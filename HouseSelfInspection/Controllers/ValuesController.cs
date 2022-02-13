@@ -16,6 +16,7 @@ namespace HouseSelfInspection.Controllers
 
         private readonly ApplicationContext context;
         readonly UserManager<ApplicationUserModel> _userManager;
+       
 
         public ValuesController(ApplicationContext context, UserManager<ApplicationUserModel> userManager)
         {
@@ -30,6 +31,22 @@ namespace HouseSelfInspection.Controllers
             try
             {
                 return context.HouseSections;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+
+     
+        public List<InspectionScheduleModel> GetInspections()
+        {
+            try
+            {
+                return context.InspectionSchedules.ToList<InspectionScheduleModel>();
+
             }
             catch (Exception ex)
             {

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Text;
-//using HouseSelfInspection.HubConfig;
+using DinkToPdf;
+using DinkToPdf.Contracts;
+using HouseSelfInspection.HubConfig;
 using HouseSelfInspection.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -129,6 +131,8 @@ namespace HouseSelfInspection
 
             //Register Mail Service
             services.AddTransient<IEmailSender, EmailSender>();
+
+            services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -149,7 +153,7 @@ namespace HouseSelfInspection
 
             app.UseSignalR(routes =>
             {
-               // routes.MapHub<HouseHub>("/toastr");
+                routes.MapHub<HouseHub>("/toastr");
             });
 
             app.UseHttpsRedirection();

@@ -37,7 +37,7 @@ namespace HouseSelfInspection.Controllers
 
        
         [HttpGet]
-        public ActionResult<IEnumerable<HouseModel>> Get()
+        public ActionResult<IEnumerable<HouseModel>> GetAll()
         {
             try
             {
@@ -52,7 +52,7 @@ namespace HouseSelfInspection.Controllers
         }
 
         [HttpGet("{id}")]
-        public HouseModel Get(int id)
+        public HouseModel GetById(int id)
         {
             try
             {

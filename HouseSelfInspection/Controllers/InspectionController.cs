@@ -1,7 +1,12 @@
 ﻿using HouseSelfInspection.Models;
+using HouseSelfInspection.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +21,17 @@ namespace HouseSelfInspection.Controllers
     {
 
         private readonly ApplicationContext context;
+        readonly UserDbContext _context;
+        private readonly IHostingEnvironment env;
+        readonly UserManager<ApplicationUserModel> _userManager;
+        readonly SignInManager<ApplicationUserModel> _signInManager;
+        readonly IConfiguration _configuration;
+        readonly TokenValidationParameters _tokenValidationParameters;
 
-        public InspectionController(ApplicationContext context)
+        public InspectionController(ApplicationContext context, UserManager<ApplicationUserModel> userManager)
         {
             this.context = context;
+            _userManager = userManager;
 
         }
 
@@ -30,11 +42,40 @@ namespace HouseSelfInspection.Controllers
 
         
         [HttpGet]
-        public ActionResult<IEnumerable<InspectionScheduleModel>> Get()
+        public async Task<List<InspectionViewModel>> Get()
         {
             try
             {
-                return context.InspectionSchedules;
+                var InspectionList = context.InspectionSchedules.ToList();
+                HouseController houseController = new HouseController(context, env, _userManager);
+                AccountController accountController = new AccountController(_userManager, _signInManager, _context, _configuration, _tokenValidationParameters, env);
+
+                List<InspectionViewModel> insepctionVMList = new List<InspectionViewModel>();
+
+                foreach (var item in InspectionList)
+                {
+                    InspectionViewModel model = new InspectionViewModel();
+
+                    model.InspectionScheduleId = item.InspectionScheduleId;
+
+                    model.HouseId = item.HouseId;
+                    var house = houseController.GetById(item.HouseId);
+                    model.HouseAddress = house.House_number + " " + house.Street + ", " + house.Suburb + ", " + house.State + house.Postal_code;
+
+                    model.UserId = item.UserId;
+
+                    ApplicationUserModel userExists = await _userManager.FindByIdAsync(model.UserId);
+                    model.UserName = userExists.UserName;
+
+                    model.Inspection_date = item.Inspection_date;
+
+                    model.Inspection_status = item.Inspection_status;
+
+                    insepctionVMList.Add(model);
+
+                }
+
+                return insepctionVMList;
 
             }
             catch (Exception ex)
