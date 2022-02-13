@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -7,11 +7,11 @@
   <ItemGroup>
     <Compile Remove="Migrations\20220122061842_SIA_Migration.cs" />
     <Compile Remove="Migrations\20220122061842_SIA_Migration.Designer.cs" />
-    <Compile Remove="Migrations\UserDb\20220126074305_UserDBMigration.cs" />
-    <Compile Remove="Migrations\UserDb\20220126074305_UserDBMigration.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="HubConfig\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

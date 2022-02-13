@@ -4,14 +4,16 @@ using HouseSelfInspection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HouseSelfInspection.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220212171719_FeedMigration")]
+    partial class FeedMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,27 +61,6 @@ namespace HouseSelfInspection.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("HouseSelfInspection.Models.ConnectionsModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name");
-
-                    b.Property<int>("RoleId");
-
-                    b.Property<string>("SignalrId");
-
-                    b.Property<DateTime>("TimeStamp");
-
-                    b.Property<string>("UserId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Connections");
-                });
-                
             modelBuilder.Entity("HouseSelfInspection.Models.FeedbackModel", b =>
                 {
                     b.Property<int>("Id")
@@ -102,7 +83,7 @@ namespace HouseSelfInspection.Migrations
 
                     b.ToTable("Feedbacks");
                 });
-                
+
             modelBuilder.Entity("HouseSelfInspection.Models.HouseModel", b =>
                 {
                     b.Property<int>("HouseId")
@@ -202,40 +183,6 @@ namespace HouseSelfInspection.Migrations
                     b.HasKey("InspectionUploadId");
 
                     b.ToTable("InspectionSubmits");
-                });
-
-            modelBuilder.Entity("HouseSelfInspection.Models.MenuModel", b =>
-                {
-                    b.Property<int>("MenuId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("MenuIcon");
-
-                    b.Property<string>("MenuName");
-
-                    b.Property<string>("MenuUrl");
-
-                    b.Property<int>("ParentId");
-
-                    b.HasKey("MenuId");
-
-                    b.ToTable("Menus");
-                });
-
-            modelBuilder.Entity("HouseSelfInspection.Models.RoleMenuModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("MenuId");
-
-                    b.Property<int>("RoleId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RoleMenus");
                 });
 
             modelBuilder.Entity("HouseSelfInspection.Models.Static_Models.HouseSectionModel", b =>

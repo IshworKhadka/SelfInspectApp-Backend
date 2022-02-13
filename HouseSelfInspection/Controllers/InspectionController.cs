@@ -28,7 +28,7 @@ namespace HouseSelfInspection.Controllers
             return View();
         }
 
-        [Authorize]
+        
         [HttpGet]
         public ActionResult<IEnumerable<InspectionScheduleModel>> Get()
         {
@@ -43,6 +43,48 @@ namespace HouseSelfInspection.Controllers
                 throw ex;
             }
         }
+
+        [HttpGet("{id}")]
+        public InspectionScheduleModel GetById(int id)
+        {
+            try
+            {
+                return context.InspectionSchedules.Find(id);
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        [HttpGet]
+        [Route("GetByUserId")]
+        public IQueryable<InspectionScheduleModel> GetByUserId([FromBody] InspectionScheduleModel model)
+        {
+            try
+            {
+
+                return context.InspectionSchedules.Where(x => x.UserId == model.UserId);
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        [HttpGet]
+        [Route("ViewHouseByInspectionId")]
+        public HouseModel ViewHouseByInspectionId([FromBody] InspectionScheduleModel model)
+        {
+            InspectionScheduleModel inspection = context.InspectionSchedules.Find(model.InspectionScheduleId);
+            HouseModel house = context.Houses.Find(inspection.HouseId);
+            return house;
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] InspectionScheduleModel model)
@@ -104,34 +146,28 @@ namespace HouseSelfInspection.Controllers
             }
         }
 
-
-
-
-        private InspectionScheduleModel[] inspectionList = new InspectionScheduleModel[]
-
+        [HttpPost]
+        [Route("PostFeedback")]
+        public async Task<IActionResult> PostFeedback([FromBody] FeedbackModel model)
         {
-            new InspectionScheduleModel
+            try
             {
-                InspectionScheduleId = 1, TenantId = 1, Inspection_date = new DateTime(), Inspection_status = "", HouseId = 1
-            },
-            new InspectionScheduleModel
+                context.Feedbacks.Add(model);
+                await context.SaveChangesAsync();
+                return Ok();
+
+            }
+            catch (Exception ex)
             {
-                InspectionScheduleId = 2, TenantId = 1, Inspection_date = new DateTime(), Inspection_status = "", HouseId = 3
-            },
-            new InspectionScheduleModel
-            {
-                InspectionScheduleId = 3, TenantId = 2, Inspection_date = new DateTime(), Inspection_status = "", HouseId = 3
-            },
-            new InspectionScheduleModel
-            {
-                InspectionScheduleId = 4, TenantId = 2, Inspection_date = new DateTime(), Inspection_status = "", HouseId = 4,
-            },
-            new InspectionScheduleModel
-            {
-                InspectionScheduleId = 5, TenantId = 2, Inspection_date = new DateTime(), Inspection_status = "", HouseId = 5
+
+                throw ex;
             }
 
-         };
+        }
+
+
+
+
 
     }
     

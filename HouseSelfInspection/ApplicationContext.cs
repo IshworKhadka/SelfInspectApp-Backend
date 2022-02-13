@@ -30,5 +30,8 @@ namespace HouseSelfInspection
         public DbSet<RoleMenuModel> RoleMenus { get; set; }
         public DbSet<ConnectionsModel> Connections { get; set; }
 
+        public DbSet<FeedbackModel> Feedbacks { get; set; }                                                            
+        public DbSet<ConnectionsModel> Connections { get; set; }
+
     }
 }

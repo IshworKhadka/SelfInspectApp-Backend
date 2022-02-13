@@ -17,7 +17,7 @@ namespace HouseSelfInspection.Models
         public int HouseId { get; set; }
 
         [Required]
-        public int TenantId { get; set; }
+        public string UserId { get; set; }
 
         [Required]
         public DateTime Inspection_date { get; set; }

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HouseSelfInspection.Migrations.UserDb
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20220126074816_UserDBMigration")]
-    partial class UserDBMigration
+    [Migration("20220209121516_UserDbMigration")]
+    partial class UserDbMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -82,6 +82,31 @@ namespace HouseSelfInspection.Migrations.UserDb
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("HouseSelfInspection.Models.RefreshTokenModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("DateAdded");
+
+                    b.Property<DateTime>("DateExpire");
+
+                    b.Property<bool>("IsRevoked");
+
+                    b.Property<string>("JwtId");
+
+                    b.Property<string>("Token");
+
+                    b.Property<string>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -192,6 +217,13 @@ namespace HouseSelfInspection.Migrations.UserDb
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("HouseSelfInspection.Models.RefreshTokenModel", b =>
+                {
+                    b.HasOne("HouseSelfInspection.Models.ApplicationUserModel", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

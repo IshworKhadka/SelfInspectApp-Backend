@@ -4,14 +4,16 @@ using HouseSelfInspection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HouseSelfInspection.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220213023433_signalRMigration")]
+    partial class signalRMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -79,7 +81,7 @@ namespace HouseSelfInspection.Migrations
 
                     b.ToTable("Connections");
                 });
-                
+
             modelBuilder.Entity("HouseSelfInspection.Models.FeedbackModel", b =>
                 {
                     b.Property<int>("Id")
@@ -102,7 +104,7 @@ namespace HouseSelfInspection.Migrations
 
                     b.ToTable("Feedbacks");
                 });
-                
+
             modelBuilder.Entity("HouseSelfInspection.Models.HouseModel", b =>
                 {
                     b.Property<int>("HouseId")

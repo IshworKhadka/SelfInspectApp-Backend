@@ -2,6 +2,7 @@
 using HouseSelfInspection.Models;
 using HouseSelfInspection.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -33,8 +35,9 @@ namespace HouseSelfInspection.Controllers
         readonly UserDbContext _context;
         readonly IConfiguration _configuration;
         readonly TokenValidationParameters _tokenValidationParameters;
+        private readonly IHostingEnvironment _env;
 
-        public AccountController(UserManager<ApplicationUserModel> userManager, SignInManager<ApplicationUserModel> signInManager, UserDbContext context, IConfiguration configuration, TokenValidationParameters tokenValidationParameters)
+        public AccountController(UserManager<ApplicationUserModel> userManager, SignInManager<ApplicationUserModel> signInManager, UserDbContext context, IConfiguration configuration, TokenValidationParameters tokenValidationParameters, IHostingEnvironment env)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -42,20 +45,26 @@ namespace HouseSelfInspection.Controllers
             _context = context;
             _configuration = configuration;
             _tokenValidationParameters = tokenValidationParameters;
+            _env = env;
 
         }
 
-        [HttpPut("EmailConfirm")]
+        [HttpPost]
+        [Route("Invitation", Name = "EmailConfirmRoute")]
         public async Task<IActionResult> EmailConfirm([FromBody] MailRequestModel model)
         {
            
-            model.ToEmail = "mrsakarmaharjan@gmail.com";
+            //model.ToEmail = "mrsakarmaharjan@gmail.com";
             var userExists = await _userManager.FindByEmailAsync(model.ToEmail);
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(userExists);
 
-            var confirmationLink = Url.Action("InviteUser", "Account", new {
-                userId = userExists.Id, token = token
+            var confirmationLink = Url.Action("InviteUser", "Account", new
+            {
+                userId = userExists.Id,
+                token = token
             }, Request.Scheme);
+
+            //var confirmationLink = $"http://localhost:4200/register?userId={userExists.Id}&token={token}";
 
             EmailSender emailSender = new EmailSender(_configuration);
             await emailSender.SendEmailAsync(userExists.Email, "Welcome to Self Inspect App", "Please click on the link " + confirmationLink);
@@ -85,7 +94,7 @@ namespace HouseSelfInspection.Controllers
             {
                 return BadRequest("Not succeeded");
             }
-
+            Redirect("http://localhost:4200");
             return Ok("User Registration Successful");
         }
 
@@ -96,14 +105,37 @@ namespace HouseSelfInspection.Controllers
             {
                 if (!ModelState.IsValid)
                     return BadRequest("Please provide all fields");
-
+                    
                 //Using Usermanager
                 var userExists = await _userManager.FindByEmailAsync(credentials.Email);
 
                 if (userExists != null && userExists.EmailConfirmed && await _userManager.CheckPasswordAsync(userExists, credentials.Password))
+                
+                //Using Configuration
+                //if(credentials.Email == _configuration["Admin:Email"] && credentials.Password == _configuration["Admin:Password"])
                 {
+                    var userExists = new ApplicationUserModel()
+                    {
+                        Email = credentials.Email,
+                        Name = "Naga",
+                        PasswordHash = credentials.Password,
+                        Id = _configuration["Admin:UserId"]
+                    };
+                    
+
                     var tokenValue = await GenerateTokenAsync(userExists);
                     return Ok(tokenValue);
+                }
+                else
+                {
+                    //database
+                    var userExists = await _userManager.FindByEmailAsync(credentials.Email);
+
+                    if (userExists != null && userExists.EmailConfirmed && await _userManager.CheckPasswordAsync(userExists, credentials.Password))
+                    {
+                        var tokenValue = await GenerateTokenAsync(userExists);
+                        return Ok(tokenValue);
+                    }
                 }
 
                 return Unauthorized();
@@ -188,9 +220,9 @@ namespace HouseSelfInspection.Controllers
                 userExists.UserName = registerVM.Email;
                 userExists.HouseId = registerVM.HouseId;
 
-                var token = await _userManager.GeneratePasswordResetTokenAsync(userExists);
+                //var token = await _userManager.GeneratePasswordResetTokenAsync(userExists);
 
-                var reset = await _userManager.ResetPasswordAsync(userExists, token, registerVM.Password);
+                //var reset = await _userManager.ResetPasswordAsync(userExists, token, registerVM.Password);
 
                 return Ok(_userManager.UpdateAsync(userExists));
 
@@ -203,6 +235,56 @@ namespace HouseSelfInspection.Controllers
 
         }
 
+
+        [HttpPut("upload/{tenantId}"), DisableRequestSizeLimit]
+        public async Task<string> Put(string tenantId)
+        {
+            try
+            {
+                var file = Request.Form.Files[0];
+                var folderName = Path.Combine(_env.WebRootPath, "tenants", "Images");
+                if (!Directory.Exists(folderName))
+                {
+                    Directory.CreateDirectory(folderName);
+                }
+                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                if (file.Length > 0)
+                {
+                    var filePath = string.Empty;
+                    //var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var fullPath = Path.Combine(pathToSave, fileName);
+                    var dbPath = Path.Combine(folderName, fileName);
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+                    filePath = "http://" + HttpContext.Request.Host.Value + "/tenants/Images/" + fileName;
+
+                    ApplicationUserModel userExists = await _userManager.FindByIdAsync(tenantId);
+                    userExists.ImagePath = filePath;
+
+                    await _userManager.UpdateAsync(userExists);
+                    return filePath;
+
+                }
+                else
+                {
+                    return "Not successful";
+                }
+
+
+            }
+
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+        }
+
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserViewModel registerVM)
         {
@@ -210,6 +292,8 @@ namespace HouseSelfInspection.Controllers
             {
                 if (!ModelState.IsValid)
                     return BadRequest("Please, provide all the required fields");
+
+                //validate token and userid
 
                 var userExists = await _userManager.FindByEmailAsync(registerVM.Email);
 
@@ -294,7 +378,8 @@ namespace HouseSelfInspection.Controllers
             {
                 Token = jwtToken,
                 RefreshToken = refreshToken.Token,
-                ExpiresAt = token.ValidTo
+                ExpiresAt = token.ValidTo,
+                UserId = user.Id
             };
 
             var result = response;
@@ -352,7 +437,8 @@ namespace HouseSelfInspection.Controllers
                     Email = item.Email,
                     StartDate = item.StartDate,
                     Username = item.UserName,
-                    HouseId = item.HouseId
+                    HouseId = item.HouseId,
+                    ImagePath = item.ImagePath
                 };
 
 
@@ -363,6 +449,7 @@ namespace HouseSelfInspection.Controllers
                 throw ex;
             }
         }
+       
 
 
         [HttpDelete("{id}")]
@@ -380,6 +467,7 @@ namespace HouseSelfInspection.Controllers
             }
         }
 
+       
 
 
     }

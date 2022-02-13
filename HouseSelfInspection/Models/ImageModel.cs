@@ -15,7 +15,7 @@ namespace HouseSelfInspection.Models
 
         public string ImageUrl { get; set; }
 
-        public int SubmittedBy { get; set; }
+        public string SubmittedBy { get; set; }
 
         public DateTime SubmittedDate { get; set; }
 
