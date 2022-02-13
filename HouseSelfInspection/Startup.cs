@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Text;
-using HouseSelfInspection.HubConfig;
+//using HouseSelfInspection.HubConfig;
 using HouseSelfInspection.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -149,7 +149,7 @@ namespace HouseSelfInspection
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<HouseHub>("/toastr");
+               // routes.MapHub<HouseHub>("/toastr");
             });
 
             app.UseHttpsRedirection();
