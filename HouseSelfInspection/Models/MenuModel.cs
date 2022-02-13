@@ -7,20 +7,14 @@ using System.Threading.Tasks;
 
 namespace HouseSelfInspection.Models
 {
-    public class ImageModel
+    public class MenuModel
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ImageId { get; set; }
-
-        public string ImageUrl { get; set; }
-
-        public string SubmittedBy { get; set; }
-
-        public DateTime SubmittedDate { get; set; }
-
-        public int HouseId { get; set; }
-
-        public int SectionId { get; set; }
+        public int MenuId { get; set; }
+        public string MenuUrl { get; set; }
+        public string MenuName { get; set; }
+        public string MenuIcon { get; set; }
+        public int ParentId { get; set; }
     }
 }

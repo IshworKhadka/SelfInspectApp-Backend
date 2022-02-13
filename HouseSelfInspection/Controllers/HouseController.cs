@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using HouseSelfInspection.Models;
+using HouseSelfInspection.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,12 +25,14 @@ namespace HouseSelfInspection.Controllers
 
         private readonly IHostingEnvironment env;
         private readonly ApplicationContext context;
+        readonly UserManager<ApplicationUserModel> _userManager;
 
         public HouseController(ApplicationContext context,
-            IHostingEnvironment env)
+            IHostingEnvironment env, UserManager<ApplicationUserModel> userManager)
         {
             this.context = context;
             this.env = env;
+            this._userManager = userManager;
         }
 
        
@@ -52,6 +57,23 @@ namespace HouseSelfInspection.Controllers
             try
             {
                 return context.Houses.Find(id);
+
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        [HttpGet("houseByUserId/{userId}")]
+        public async Task<HouseModel> Get(string userId)
+        {
+            try
+            {
+                ApplicationUserModel user = await _userManager.FindByIdAsync(userId);
+                return context.Houses.Find(user.HouseId);
 
 
             }
@@ -200,6 +222,7 @@ namespace HouseSelfInspection.Controllers
                         var filePath = "http://" + HttpContext.Request.Host.Value + "/House/Images/" + fileName;
 
                         imgModel.ImageUrl = filePath;
+                        imgModel.SubmittedDate = DateTime.Now;
                         context.Images.Add(imgModel);
                         await context.SaveChangesAsync();
 
@@ -216,7 +239,23 @@ namespace HouseSelfInspection.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetImages")]
+        public string[] GetImages([FromBody] ImageModel model)
+        {
+            
+            var imageModelList = context.Images.Where(x => x.SubmittedBy == model.SubmittedBy && x.HouseId == model.HouseId && x.SectionId == model.SectionId).ToList();
+            List<string> urlList = new List<string>();
+            foreach (var item in imageModelList)
+            {
+                urlList.Add(item.ImageUrl);
 
+            }
+            return urlList.ToArray();
+        }
+
+       
+        
 
     }
 }

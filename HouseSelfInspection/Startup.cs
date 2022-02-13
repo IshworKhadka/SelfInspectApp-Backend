@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Text;
+using HouseSelfInspection.HubConfig;
 using HouseSelfInspection.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -39,8 +40,17 @@ namespace HouseSelfInspection
                 builder
                 .AllowAnyOrigin()
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyOrigin()
+                .AllowCredentials()
+                .AllowAnyMethod()
+                .WithOrigins("http://localhost:4200");
             }));
+
+
+            //Add SignalR Service
+            services.AddSignalR(options => {
+                options.EnableDetailedErrors = true;
+            });
 
 
             //Configure DbContext with SQL
@@ -80,6 +90,7 @@ namespace HouseSelfInspection
                 options.Password.RequireUppercase = false;
                 options.Password.RequiredLength = 4;
             });
+
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
@@ -135,6 +146,11 @@ namespace HouseSelfInspection
             }
 
             app.UseCors("Cors");
+
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<HouseHub>("/toastr");
+            });
 
             app.UseHttpsRedirection();
 

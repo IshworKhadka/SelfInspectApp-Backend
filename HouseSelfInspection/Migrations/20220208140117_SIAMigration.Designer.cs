@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HouseSelfInspection.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20220122093728_SIA_Migration")]
-    partial class SIA_Migration
+    [Migration("20220208140117_SIAMigration")]
+    partial class SIAMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -112,7 +112,7 @@ namespace HouseSelfInspection.Migrations
 
                     b.Property<int>("SectionId");
 
-                    b.Property<int>("SubmittedBy");
+                    b.Property<string>("SubmittedBy");
 
                     b.Property<DateTime>("SubmittedDate");
 
@@ -133,7 +133,8 @@ namespace HouseSelfInspection.Migrations
 
                     b.Property<string>("Inspection_status");
 
-                    b.Property<int>("TenantId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("InspectionScheduleId");
 
@@ -154,28 +155,11 @@ namespace HouseSelfInspection.Migrations
 
                     b.Property<int>("SectionId");
 
-                    b.Property<int>("TenantId");
+                    b.Property<string>("UserId");
 
                     b.HasKey("InspectionUploadId");
 
                     b.ToTable("InspectionSubmits");
-                });
-
-            modelBuilder.Entity("HouseSelfInspection.Models.LoginModel", b =>
-                {
-                    b.Property<int>("User_ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool>("isAdmin");
-
-                    b.Property<string>("password");
-
-                    b.Property<string>("username");
-
-                    b.HasKey("User_ID");
-
-                    b.ToTable("Login");
                 });
 
             modelBuilder.Entity("HouseSelfInspection.Models.Static_Models.HouseSectionModel", b =>
@@ -238,6 +222,7 @@ namespace HouseSelfInspection.Migrations
                 {
                     b.Property<int>("TenantId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnName("TenantId")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Contact")
